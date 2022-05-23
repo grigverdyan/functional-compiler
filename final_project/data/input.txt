@@ -1,0 +1,9 @@
+VAR G1 = 1; VAR G2 = 2;	
+FUNC F1(a);			
+FUNC F2(a,b,c) = F1(a)+F1(b)*F1(c);
+FUNC F1(a) = a*G2;	
+
+    VAR L1 = In();
+    VAR L2 = F2(L1, L1+G1, L1+G2);
+    Out(L2)
+

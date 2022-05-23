@@ -1,0 +1,15 @@
+
+.data
+
+
+.code
+JUMP  START 
+EXIT
+
+START:
+PUSH A1 
+MOVE A0 , A1 
+
+POP A1
+RETURN
+
