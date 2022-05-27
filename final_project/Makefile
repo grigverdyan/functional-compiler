@@ -29,7 +29,7 @@ fclean : clean
 	$(RM) $(EXECUTABLE)
 
 debug :
-	gdb $(EXECUTABLE)
+	gdb $(EXECUTABLE) input.txt output.txt core
 
 gcov :
 	$(CC) $(SOURCES) --coverage -o $(EXECUTABLE)

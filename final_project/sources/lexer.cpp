@@ -36,7 +36,6 @@ void    Lexer::setExpression(const std::string& exp)
     if (!operatorValidator(m_expression)) {
         throw ErrorMessage("\t[Lexer Error]: Invalid operator in line ", m_lineNumber);
     }
-
     infixToPostfix();
 }
 
