@@ -136,7 +136,7 @@ E_Reg Parser::findEmptyReg(E_Type type)
         }
         n_r = varType;
     }
-    return E_Reg::undefind;
+    return E_Reg::undefined;
 }
 
 E_Ar  Parser::findEmptyAr()

@@ -74,7 +74,7 @@ private:
         std::make_pair(E_Reg::R29, false),
         std::make_pair(E_Reg::R30, false),
         std::make_pair(E_Reg::R31, false),
-        std::make_pair(E_Reg::undefind, false),
+        std::make_pair(E_Reg::undefined, false),
     };
        
     std::map<E_Ar, bool> m_addressRegistorState
