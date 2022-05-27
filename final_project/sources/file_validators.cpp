@@ -1,4 +1,5 @@
 #include "../includes/header.hpp"
+//#include "../includes/lexer.hpp"
 
 bool    isValidFiles(std::string in, std::string out)
 {
@@ -8,3 +9,4 @@ bool    isValidFiles(std::string in, std::string out)
             || in.length() != (inExtIdx + 4) || out.length() != (outExtIdx + 4)
             || in[0] == '.' || out[0] == '.') ? false : true;
 }
+

@@ -4,6 +4,13 @@
 #include "header.hpp"
 #include "user_defined_types.hpp"
 
+//aliases
+using StackString = std::stack<std::string>;
+using MapStrEType = std::map<std::string, E_Type>;
+using StackEReg   = std::stack<E_Reg>;
+using MapERegBool = std::map<E_Reg, bool>;
+using MapEArBool  = std::map<E_Ar, bool>;
+
 class   Parser {
 public:
     Parser();
@@ -12,35 +19,34 @@ public:
     void    parseLineCode(int lineNumber);
     void    generateOutputCode();
 
-
 private:
-    std::stringstream               m_dataSection;
-    std::stringstream               m_codeSection;
-    std::stringstream               m_t_varStream;
-    std::stringstream               m_t_functionStream;
-    std::stack<std::string>         m_langSpecifiers;
-    std::map<std::string,E_Type>    m_varNameType;
-    int                             m_parsedCodeLineNumber;
+    std::stringstream       m_dataSection;
+    std::stringstream       m_codeSection;
+    std::stringstream       m_t_varStream;
+    std::stringstream       m_t_functionStream;
+    StackString             m_langSpecifiers;
+    MapStrEType             m_varNameType;
+    int                     m_parsedCodeLineNumber;
 
-    bool                            isRegistor(const std::string& var);
-    bool                            isNumber(std::string& s);
-    bool                            isOperator(std::string& obj);
-    bool                            isVariable(std::string& var);
-    bool                            isFunction(std::string& obj);
-    E_Reg                           findEmptyReg(E_Type type);
-    E_Ar                            findEmptyAr();
-    E_Type                          getType(int& number);
-    E_Type                          getRegType(int regNum);
-    const std::string               getTypename(E_Type type);
-    void                            changeRegState(E_Reg); 
-    void                            changeArState(E_Ar);
-    void                            generateCode(E_Reg, E_Reg, std::string&, int, std::stringstream&, std::stringstream&, std::stack<E_Reg>&, std::stack<std::string>&);
-    void                            generateFunctionCall(std::string& temp, std::stringstream& tempCodeStream);
-    void                            getDataType(int arg, std::stringstream& t_dataStream);
-    void                            updateRegAr();
-    void                            generateCodeSectionCode();
+    bool                    isRegistor(const std::string& var);
+    bool                    isNumber(std::string& s);
+    bool                    isOperator(std::string& obj);
+    bool                    isVariable(std::string& var);
+    bool                    isFunction(std::string& obj);
+    E_Reg                   findEmptyReg(E_Type type);
+    E_Ar                    findEmptyAr();
+    E_Type                  getType(int& number);
+    E_Type                  getRegType(int regNum);
+    const std::string       getTypename(E_Type type);
+    void                    changeRegState(E_Reg); 
+    void                    changeArState(E_Ar);
+    void                    generateCode(E_Reg, E_Reg, std::string&, int, std::stringstream&, std::stringstream&, StackEReg&, StackString&);
+    void                    generateFunctionCall(std::string& temp, std::stringstream& tempCodeStream);
+    void                    getDataType(int arg, std::stringstream& t_dataStream);
+    void                    updateRegAr();
+    void                    generateCodeSectionCode();
 
-    std::map<E_Reg, bool>       m_RegNameState
+    MapERegBool             m_RegNameState
     {
         std::make_pair(E_Reg::R0,  true),
         std::make_pair(E_Reg::R1,  false),
@@ -77,7 +83,7 @@ private:
         std::make_pair(E_Reg::undefined, false),
     };
        
-    std::map<E_Ar, bool> m_addressRegistorState
+    MapEArBool              m_addressRegistorState
     {
         std::make_pair(E_Ar::A2,false),
         std::make_pair(E_Ar::A3,false),

@@ -5,15 +5,15 @@
 
 Parser::Parser()
 {
-    m_dataSection << "\n.data\n";
+    m_dataSection << ".MAIN = Begin\n" << "\n.data\n";
     m_codeSection << "\n.code\n";
 }
 
 void  Parser::generateOutputCode()
 {
 	generateCodeSectionCode();
-	IO_Files::outWriteFileStream << m_dataSection.str() << std::endl << 
-				  m_codeSection.str() << std::endl;
+	IO_Files::outWriteFileStream << m_dataSection.str() << 
+				  m_codeSection.str() << std::endl << "EXIT";
 }
 
 void    Parser::lexemmeToTokenString(std::string lexemme, int line)
@@ -22,7 +22,7 @@ void    Parser::lexemmeToTokenString(std::string lexemme, int line)
     const char* last = strrchr(lexemme.c_str(), '=');
 
     if (first != last) {
-        throw ErrorMessage("\t[Parser ERROR]: Put ';' in line ", line);
+        throw ErrorMessage("\n\t[Parser ERROR]: Put ';' in line ", line);
         exit(7);
     }
     char* lexerStr = const_cast<char*>(lexemme.c_str());
@@ -95,7 +95,7 @@ bool  Parser::isFunction(std::string& operand)
 
 bool  Parser::isVariable(std::string& codePart)
 {
-    std::map<std::string, E_Type>::const_iterator iter = m_varNameType.find(codePart);
+    MapStrEType::const_iterator iter = m_varNameType.find(codePart);
     if (iter == m_varNameType.end())
         return false;
     return true;
@@ -122,8 +122,8 @@ E_Reg Parser::findEmptyReg(E_Type type)
         varType = 4;
         break;
     }
-    std::map<E_Reg, bool>::const_iterator iter_begin = m_RegNameState.begin();
-    std::map<E_Reg, bool>::const_iterator iter_end = m_RegNameState.end();
+    MapERegBool::const_iterator iter_begin = m_RegNameState.begin();
+    MapERegBool::const_iterator iter_end = m_RegNameState.end();
 
     int n_r = varType;
     for (; iter_begin != iter_end;) {
@@ -141,8 +141,8 @@ E_Reg Parser::findEmptyReg(E_Type type)
 
 E_Ar  Parser::findEmptyAr()
 {
-    std::map<E_Ar, bool>::const_iterator iter_begin = m_addressRegistorState.begin();
-    std::map<E_Ar, bool>::const_iterator iter_end = m_addressRegistorState.end();
+    MapEArBool::const_iterator iter_begin = m_addressRegistorState.begin();
+    MapEArBool::const_iterator iter_end = m_addressRegistorState.end();
 
     for (; iter_begin != iter_end; ++iter_begin) {
         if (iter_begin->second == false)
@@ -193,7 +193,7 @@ const std::string  Parser::getTypename(E_Type type)
 
 void  Parser::changeRegState(E_Reg reg)
 {
-    std::map<E_Reg, bool>::iterator iter = m_RegNameState.find(reg);
+    MapERegBool::iterator iter = m_RegNameState.find(reg);
     iter->second = !iter->second;
 }
 
@@ -203,7 +203,7 @@ void  Parser::changeArState(E_Ar reg)
     iter->second = !iter->second;
 }
 
-void    Parser::generateCode(E_Reg left, E_Reg right, std::string& operator_1, int lineNumber, std::stringstream& t_codeStream, std::stringstream& t_dataStream, std::stack<E_Reg>& t_stackReg, std::stack<std::string>& t_stackOperator)
+void    Parser::generateCode(E_Reg left, E_Reg right, std::string& operator_1, int lineNumber, std::stringstream& t_codeStream, std::stringstream& t_dataStream, StackEReg& t_stackReg, StackString& t_stackOperator)
 {
     E_Reg reg_3 = left > right ? left : right;
     E_Reg reg_4 = left < right ? left : right;
@@ -236,7 +236,7 @@ void    Parser::generateCode(E_Reg left, E_Reg right, std::string& operator_1, i
             t_codeStream.str(std::string());
 
             int i = 0;
-            while (m_langSpecifiers.top()[i] != '(')
+            while (m_langSpecifiers.top()[i] != E_Bracket::left)
             {
                 temp_str += m_langSpecifiers.top()[i];
                 ++i;
@@ -270,7 +270,7 @@ void    Parser::generateCode(E_Reg left, E_Reg right, std::string& operator_1, i
             t_stackOperator.pop();
             t_stackReg.pop();
         } else {
-            throw ErrorMessage("\t[Parser ERROR]: Undefind variable or function in line  ", lineNumber);
+            throw ErrorMessage("\n\t[Parser ERROR]: Undefined variable or function in line ", lineNumber);
         }
     }
 }
@@ -279,7 +279,7 @@ void Parser::generateFunctionCall(std::string& temp, std::stringstream& t_codeSt
 {
     int i = 0;
     std::string temp_str;
-    while (temp[i] != '(')
+    while (temp[i] != E_Bracket::left)
     {
         temp_str += temp[i];
         ++i;
@@ -294,12 +294,12 @@ void    Parser::parseLineCode(int lineNumber)
 {
     std::stringstream        t_codeStream;
     std::stringstream        t_dataStream;
-    std::stack<std::string>  t_stackOperator;
-    std::stack<E_Reg>        t_stackReg;
+    StackString  t_stackOperator;
+    StackEReg        t_stackReg;
 
     while (!m_langSpecifiers.empty()) {
         if (isRegistor(m_langSpecifiers.top())) {
-            throw ErrorMessage("\t[Parser ERROR]: Invalid variable in line.", lineNumber); 
+            throw ErrorMessage("\n\t[Parser ERROR]: Invalid variable in line.", lineNumber); 
         }
         if (isOperator(m_langSpecifiers.top())) {
             t_stackOperator.push(m_langSpecifiers.top());
@@ -347,7 +347,7 @@ void    Parser::parseLineCode(int lineNumber)
                 E_Reg reg = findEmptyReg(getType(i));
                 t_codeStream << "ASSIGN " << getTypename(getType(i)) << " R" << reg << " , " << i << std::endl;
                 changeRegState(reg);
-                std::map<std::string, E_Type>::iterator iter = m_varNameType.find(temp_2);
+                MapStrEType::iterator iter = m_varNameType.find(temp_2);
                 E_Reg reg_2 = findEmptyReg(iter->second);
                 changeRegState(reg_2);
                 t_codeStream << "ASSIGN  A" << findEmptyAr() << " , " << temp_2 << std::endl;
@@ -355,14 +355,14 @@ void    Parser::parseLineCode(int lineNumber)
                 changeArState(findEmptyAr());
                 generateCode(reg, reg_2, t_stackOperator.top(), lineNumber, t_codeStream, t_dataStream, t_stackReg, t_stackOperator);
             } else {
-                throw ErrorMessage("\t[Parser ERROR]: Undefind variable or function in line ", lineNumber);
+                throw ErrorMessage("\n\t[Parser ERROR]: Undefined variable or function in line ", lineNumber);
             }
         } else if (isFunction(m_langSpecifiers.top())) {
             if (isOperator(t_stackOperator.top())) {
                 t_stackOperator.push(m_langSpecifiers.top());
                 m_langSpecifiers.pop();
             } else  if (isNumber(t_stackOperator.top())) {
-                std::map<std::string, E_Type>::iterator iter = m_varNameType.find(m_langSpecifiers.top());
+                MapStrEType::iterator iter = m_varNameType.find(m_langSpecifiers.top());
                 std::string temp_2 = m_langSpecifiers.top();
                 m_langSpecifiers.pop();
                 if (iter != m_varNameType.end()) {
@@ -378,7 +378,7 @@ void    Parser::parseLineCode(int lineNumber)
                 } else  if (m_langSpecifiers.size() == 0 && t_stackOperator.size() == 2) {
                     int i = 0;
                     std::string temp_str;
-                    while (temp_2[i] != '(') {
+                    while (temp_2[i] != E_Bracket::left) {
                         temp_str += temp_2[i];
                         ++i;
                     }
@@ -405,13 +405,13 @@ void    Parser::parseLineCode(int lineNumber)
                     generateFunctionCall(temp_2, m_t_varStream);
                 }
             } else if (isFunction(t_stackOperator.top())) {
-                std::map<std::string, E_Type>::iterator iter = m_varNameType.find(m_langSpecifiers.top());
-                std::map<std::string, E_Type>::iterator iter_1 = m_varNameType.find(t_stackOperator.top());
+                MapStrEType::iterator iter = m_varNameType.find(m_langSpecifiers.top());
+                MapStrEType::iterator iter_1 = m_varNameType.find(t_stackOperator.top());
                 std::string temp_2 = m_langSpecifiers.top();
                 generateFunctionCall(temp_2, t_codeStream);
 
                 if (iter_1 == m_varNameType.end()) {
-                    throw ErrorMessage("\t[Parser ERROR]: Undefind function in line ", lineNumber);
+                    throw ErrorMessage("\n\t[Parser ERROR]: Undefined function in line ", lineNumber);
                 }
                 if (iter == iter_1) {
                     E_Reg reg = findEmptyReg(iter_1->second);
@@ -419,7 +419,7 @@ void    Parser::parseLineCode(int lineNumber)
                 }
                 m_langSpecifiers.pop();
                 if (iter == m_varNameType.end() && m_langSpecifiers.size() != 0)
-                     throw ErrorMessage("\t[Parser ERROR]: Undefind function in line ", lineNumber);
+                     throw ErrorMessage("\n\t[Parser ERROR]: Undefined function in line ", lineNumber);
                 temp_2 = t_stackOperator.top();
                 t_stackOperator.pop();
                 generateFunctionCall(temp_2, t_codeStream);
@@ -428,28 +428,28 @@ void    Parser::parseLineCode(int lineNumber)
                 generateCode(E_Reg::R0, reg, t_stackOperator.top(), lineNumber, t_codeStream, t_dataStream, t_stackReg, t_stackOperator);
                 m_RegNameState.find(E_Reg::R0)->second = true;
             } else if (isVariable(t_stackOperator.top())) {
-                std::map<std::string, E_Type>::iterator iter = m_varNameType.find(m_langSpecifiers.top());
+                MapStrEType::iterator iter = m_varNameType.find(m_langSpecifiers.top());
                 std::string temp_2 = m_langSpecifiers.top();
                 if (iter == m_varNameType.end()) {
-                     throw ErrorMessage("\t[Parser ERROR]: Undefind function in line ", lineNumber);
+                     throw ErrorMessage("\n\t[Parser ERROR]: Undefined function in line ", lineNumber);
                 }
                 m_langSpecifiers.pop();
                 generateFunctionCall(temp_2, t_codeStream);
-                std::map<std::string, E_Type>::iterator iter_1 = m_varNameType.find(t_stackOperator.top());
+                MapStrEType::iterator iter_1 = m_varNameType.find(t_stackOperator.top());
                 t_stackOperator.pop();
                 E_Reg reg = findEmptyReg(iter_1->second);
                 changeRegState(reg);
                 generateCode(E_Reg::R0, reg , t_stackOperator.top(), lineNumber, t_codeStream, t_dataStream, t_stackReg, t_stackOperator);
                 m_RegNameState.find(E_Reg::R0)->second = true;
             } else {
-                throw ErrorMessage("\t[Parser ERROR]: Undefind variable or function in line ", lineNumber);
+                throw ErrorMessage("\n\t[Parser ERROR]: Undefined variable or function in line ", lineNumber);
             }
         } else  if (isVariable(m_langSpecifiers.top())) {
             if (isOperator(t_stackOperator.top())) {
                 t_stackOperator.push(m_langSpecifiers.top());
                 m_langSpecifiers.pop();
             } else  if (isNumber(t_stackOperator.top())) {
-                std::map<std::string, E_Type>::iterator iter = m_varNameType.find(m_langSpecifiers.top());
+                MapStrEType::iterator iter = m_varNameType.find(m_langSpecifiers.top());
                 m_langSpecifiers.pop();
                 int i = std::atoi(t_stackOperator.top().c_str());
                 E_Reg reg_1 = findEmptyReg(getType(i));
@@ -462,22 +462,22 @@ void    Parser::parseLineCode(int lineNumber)
                 t_codeStream << "LOAD R" << reg_2 << " , A" << findEmptyAr() << std::endl;
                 generateCode(reg_2, reg_1, t_stackOperator.top(), lineNumber, t_codeStream, t_dataStream, t_stackReg, t_stackOperator);
             } else  if (isFunction(t_stackOperator.top())) {
-                std::map<std::string, E_Type>::iterator iter_1 = m_varNameType.find(m_langSpecifiers.top());
+                MapStrEType::iterator iter_1 = m_varNameType.find(m_langSpecifiers.top());
                 m_langSpecifiers.pop();
-                std::map<std::string, E_Type>::iterator iter_2 = m_varNameType.find(t_stackOperator.top());
+                MapStrEType::iterator iter_2 = m_varNameType.find(t_stackOperator.top());
                 std::string temp_2 = t_stackOperator.top();
                 t_stackOperator.pop();
                 if (iter_2 == m_varNameType.end()) {
-                    throw ErrorMessage("\t[Parser ERROR]: Undefind function in line ", lineNumber);
+                    throw ErrorMessage("\n\t[Parser ERROR]: Undefined function in line ", lineNumber);
                 }
                 generateFunctionCall(temp_2, t_codeStream);
                 E_Reg reg = findEmptyReg(iter_1->second);
                 changeRegState(reg);
                 generateCode(reg, E_Reg::R0, t_stackOperator.top(), lineNumber, t_codeStream, t_dataStream, t_stackReg, t_stackOperator);
             } else  if (isVariable(t_stackOperator.top())) {
-                std::map<std::string, E_Type>::iterator iter_1 = m_varNameType.find(m_langSpecifiers.top());
+                MapStrEType::iterator iter_1 = m_varNameType.find(m_langSpecifiers.top());
                 m_langSpecifiers.pop();
-                std::map<std::string, E_Type>::iterator iter_2 = m_varNameType.find(t_stackOperator.top());
+                MapStrEType::iterator iter_2 = m_varNameType.find(t_stackOperator.top());
                 t_stackOperator.pop();
                 E_Reg reg = findEmptyReg(iter_1->second);
                 changeRegState(reg);
@@ -486,7 +486,7 @@ void    Parser::parseLineCode(int lineNumber)
                 generateCode(reg, reg_2, t_stackOperator.top(), lineNumber,
                     t_codeStream, t_dataStream, t_stackReg, t_stackOperator);
             } else {
-                throw ErrorMessage("\t[Parser ERROR]: Undefind function in line ", lineNumber);
+                throw ErrorMessage("\n\t[Parser ERROR]: Undefined function in line ", lineNumber);
             }
         } else  if (m_langSpecifiers.size() == 1 && t_stackOperator.size() == 2 && t_stackReg.empty()) {
             if (isNumber(t_stackOperator.top())) {
@@ -504,10 +504,10 @@ void    Parser::parseLineCode(int lineNumber)
                 changeArState(findEmptyAr());
                 changeRegState(reg);
             } else if (isFunction(t_stackOperator.top())) {
-                std::map<std::string, E_Type>::iterator iter = m_varNameType.find(t_stackOperator.top());
+                MapStrEType::iterator iter = m_varNameType.find(t_stackOperator.top());
 
                 if (iter == m_varNameType.end()) {
-                    throw ErrorMessage("\t[Parser ERROR]: Undefind function in line ", lineNumber);
+                    throw ErrorMessage("\n\t[Parser ERROR]: Undefined function in line ", lineNumber);
                 }
                 E_Reg reg = findEmptyReg(iter->second);
                 m_varNameType.insert(std::make_pair(m_langSpecifiers.top(), iter->second));
@@ -521,9 +521,9 @@ void    Parser::parseLineCode(int lineNumber)
                 changeArState(findEmptyAr());
                 changeRegState(reg);
             } else {
-                std::map<std::string, E_Type>::iterator iter = m_varNameType.find(t_stackOperator.top());
+                MapStrEType::iterator iter = m_varNameType.find(t_stackOperator.top());
                 if (iter == m_varNameType.end()) {
-                    throw ErrorMessage("\t[Parser ERROR]: Undefind variable in line ", lineNumber);
+                    throw ErrorMessage("\n\t[Parser ERROR]: Undefined variable in line ", lineNumber);
                 }
                 E_Reg reg = findEmptyReg(iter->second);
                 t_codeStream << "ASSIGN  A" << findEmptyAr() << " , " << t_stackOperator.top() << std::endl;
@@ -591,8 +591,7 @@ void  Parser::updateRegAr()
 
 void  Parser::generateCodeSectionCode()
 {
-    m_codeSection << "JUMP  START " << std::endl;
-    m_codeSection << "EXIT" << std::endl;
+    m_codeSection << "JUMP  START\n" << std::endl;
     m_codeSection << m_t_functionStream.str() << std::endl;
     m_codeSection << "START:" << std::endl;
     m_codeSection << "PUSH A1 " << std::endl << "MOVE A0 , A1 " << std::endl;

@@ -34,11 +34,10 @@ int main(int argc, char *argv[])
         
         std::string obj = IO_obj.getParsedCode(); // get parsed code
         Lexer       lexer_obj(obj);               // initialize lexer object
-//        lexer_obj.getCodeLine();
         lexer_obj.codeLineLexemme();
         int lineNumber = 1;                // code line number
         Parser  parser_obj;
-        lexer_obj.m_parsedCode.push("");
+//        lexer_obj.m_parsedCode.push("");
         while (!lexer_obj.m_parsedCode.empty()) {
             parser_obj.lexemmeToTokenString(lexer_obj.m_parsedCode.front(), lineNumber);
             lexer_obj.m_parsedCode.pop();
