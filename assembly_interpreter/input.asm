@@ -1,0 +1,12 @@
+mov r1 4
+mov r2 5
+Add r1 R2
+mov R3 7
+mul r3 r2
+div r2 r1
+mov r6 9
+mov r4 13
+mov r5 126
+add r4 r5
+or r1 r2
+and r2 r3
