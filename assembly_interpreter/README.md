@@ -6,13 +6,5 @@ This program generates 2 executable files.
     2)  ./compiler
             This has 2 modes, firstly you have to compile input file, and then see the results,
             just like this:
-        ./compiler 1 input.asm out
-        ./compiler 2 out
-
-FROM:
-    Davit Petrosyan
-    Grigori Verdyan
-    Hrayr Hovhannisyan
-    Khoren Galstyan
-    Vahe Zilabyan
-    Vanik Harutyunyan
+        ./compiler 1 input.asm out.exe
+        ./compiler 2 out.exe
