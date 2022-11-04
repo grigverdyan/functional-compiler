@@ -1,4 +1,4 @@
-How does this Assembly Interpretator/Compiler works?
+How does this Assembly Interpreter/Compiler works?
 
 This program generates 2 executable files.
 
@@ -14,4 +14,7 @@ This program generates 2 executable files.
             just like this:
             
         ./compiler 1 input.asm out.exe
+            and to see the results, run like this:
         ./compiler 2 out.exe
+
+P.S. Program is written on Ubuntu 22.04.1 LTS

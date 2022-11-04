@@ -1,11 +1,9 @@
-#
+This program generates from so-called programming language syntax an assembly file.
+To execute the program, run executable, give it to input file, without path(files are in data/ directory),
+and give the output file.
+Program reads "program code" from input file, and writes the assembly in the output file.
 
-VAR G1 = 1; VAR G2 = 2;		# Global Variables
-FUNC F1(a);			# Function declaration
-FUNC F2(a,b,c) = F1(a)+F1(b)*F1(c);	# Function definition
-FUNC F1(a) = a*G2;		# Function definition
-Begin
-    VAR L1 = In();
-    VAR L2 = F2(L1, L1+G1, L1+G2);
-    Out(L2)
-End
+Example:
+    ./func_compiler.exe input.txt output.txt
+
+P.S. Program is written on Ubuntu 22.04.1 LTS
